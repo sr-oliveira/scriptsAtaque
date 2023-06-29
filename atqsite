@@ -1,0 +1,34 @@
+import requests
+import random
+
+def ataque_site(url):
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+    ]
+
+    payload = {
+        'parametro': 'valor_malicioso',
+        'user_agent': random.choice(user_agents),
+        'cookie': 'session_id=1234567890'
+    }
+
+    headers = {
+        'User-Agent': payload['user_agent'],
+        'Cookie': payload['cookie']
+    }
+
+    # Envio de várias requisições maliciosas ao site
+    for _ in range(10):
+        response = requests.post(url, data=payload, headers=headers)
+
+        if response.status_code == 200:
+            print('Ataque bem-sucedido!')
+        else:
+            print('O ataque falhou.')
+
+# Exemplo de uso do script
+url_alvo = 'https://www.sitealvo.com'
+ataque_site(url_alvo)
